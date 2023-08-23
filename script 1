@@ -1,6 +1,4 @@
--- // This is your new loader, please replace your existing one  
--- // your hosted loadstring is below, use it or host the included script yourself
--- loadstring(game:HttpGet('https://scripts.luawl.com/hosted/2796/21357/MzqHubv1.1.lua'))()
+
 
 -- This file was generated using Luraph Obfuscator v13.6.7
 
