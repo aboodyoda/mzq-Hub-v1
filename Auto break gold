@@ -1,36 +1,54 @@
--- GoldBreaker.lua
+getgenv().autoBreaking = true
+getgenv().breakRadius = 20
 
-local GoldBreaker = {}
-GoldBreaker.Enabled = false
-GoldBreaker.BreakRadius = 20
-
-local function breakClosestGold()
+local function autoBreak()
     local localPlayer = game:GetService("Players").LocalPlayer
-    local character = localPlayer.Character
-    local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
-    
-    if not humanoidRootPart then return end
-    
-    local resources = game:GetService("Workspace"):FindFirstChild("Resources")
-    local localPosition = humanoidRootPart.Position
+    local workspace = game:GetService("Workspace")
+    local replicatedStorage = game:GetService("ReplicatedStorage")
+    local swingToolEvent = replicatedStorage:WaitForChild("Events"):WaitForChild("SwingTool")
 
-    for _, resourceNode in pairs(resources:GetChildren()) do
-        local targetPart = resourceNode:FindFirstChild("small rock") 
-                       or resourceNode:FindFirstChildWhichIsA("Part") 
-                       or resourceNode:FindFirstChildWhichIsA("UnionOperation")
+    while getgenv().autoBreaking do
+        wait(0.5) -- Increase the delay to reduce lag
 
-        if targetPart and (targetPart.Position - localPosition).Magnitude < GoldBreaker.BreakRadius then
-            local breakTable = {[1] = targetPart}
-            game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("SwingTool"):FireServer(breakTable)
+        local character = localPlayer.Character
+        if not character then
+            print("Character not found.")
+            return
+        end
+
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if not humanoidRootPart then
+            print("HumanoidRootPart not found.")
+            return
+        end
+
+        local localPosition = humanoidRootPart.Position
+        local breakTable = {}  -- List of gold nodes to break
+
+        for _, object in pairs(workspace:GetChildren()) do
+            if object:IsA("Model") and object.Name ~= "Resources" then
+                for _, goldNode in pairs(object:GetChildren()) do
+                    if goldNode:IsA("UnionOperation") and goldNode.Name == "Gold Node" then
+                        if (goldNode.Position - localPosition).Magnitude < getgenv().breakRadius then
+                            table.insert(breakTable, goldNode)
+                            print("Gold Node found and added to break list.")
+                        else
+                            print("Gold Node is out of range.")
+                        end
+                    else
+                        print("Gold Node not found or not a UnionOperation.")
+                    end
+                end
+            end
+        end
+
+        -- If there are any gold nodes to break, send the request
+        if #breakTable > 0 then
+            swingToolEvent:FireServer(breakTable)
+            print("Gold Nodes hit.")
+            wait(0.1)  -- Introducing a delay after breaking to avoid overloading the server (adjust the value as necessary)
         end
     end
 end
 
-function GoldBreaker.AutoBreak()
-    while GoldBreaker.Enabled do
-        wait(0.5)
-        breakClosestGold()
-    end
-end
-
-return GoldBreaker
+autoBreak() -- Calling the function to start auto-breaking
