@@ -1,7 +1,0 @@
-pcall(function()
-    if key == "5a50d0750ef89167b78c4b2ed3d72151dfef0717" then
-if game.PlaceId == 11729688377 then
-          loadstring(game:HttpGet('https://scripts.luawl.com/hosted/2796/21357/MzqHubv1.1.lua'))()
-       end        
-    end
-end)
